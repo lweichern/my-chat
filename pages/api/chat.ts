@@ -23,15 +23,13 @@ export default async function handler(
       const aiResults = await openai.createCompletion({
         model: "text-davinci-003",
         prompt: prompt,
-        temperature: 0.9,
+        temperature: 0,
         max_tokens: 2048,
       });
 
       //   const imageResult = await openai.createImage
 
       const response = aiResults.data.choices[0].text;
-
-      console.log("Chat response: ", response);
 
       res.status(200).json({ text: response });
     } catch (error) {

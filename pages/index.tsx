@@ -4,6 +4,8 @@ import { Inter, Ultra } from "next/font/google";
 import styles from "@/styles/Home.module.css";
 import axios from "axios";
 import { useState } from "react";
+import { BiSend } from "react-icons/bi";
+import LoadingAnimation from "./components/LoadingAnimation";
 
 type message = {
   type: string;
@@ -14,6 +16,7 @@ export default function Home() {
   const [pets, setPets] = useState([]);
   const [inputVal, setInputVal] = useState("");
   const [chatLogs, setChatLogs] = useState<message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const clickHandler = async () => {
     const url = "/api/hello";
@@ -35,9 +38,33 @@ export default function Home() {
       ...prevChatLogs,
       { type: "user", message: inputVal },
     ]);
-    console.log("Input value: ", inputVal);
+
+    sendMessage(inputVal);
 
     setInputVal("");
+  };
+
+  const sendMessage = async (inputValue: string) => {
+    const data = {
+      prompt: inputValue,
+    };
+    const url = "/api/chat";
+
+    setIsLoading(true);
+
+    axios
+      .post(url, data)
+      .then((res) => {
+        setChatLogs((prevChat) => [
+          ...prevChat,
+          { type: "bot", message: res.data.text },
+        ]);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        setIsLoading(false);
+        console.log(error);
+      });
   };
 
   return (
@@ -48,8 +75,9 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className=" text-red-500 font-bold text-center flex flex-col h-screen border-2 border-red-500 w-1/2 mx-auto">
-        {/* <button
+      <main className=" bg-gradient-to-r from-[#C990AB] to-[#4A3434]">
+        <div className="text-white font-bold text-center flex flex-col h-screen w-1/2 mx-auto border-2 border-[#4A3434]">
+          {/* <button
           className="p-2 rounded bg-black cursor-pointer"
           onClick={clickHandler}
         >
@@ -66,30 +94,55 @@ export default function Home() {
           )}
         </div> */}
 
-        <h1 className="text-3xl">Chat Logs</h1>
+          <h1 className="text-3xl">Chat Bot</h1>
 
-        <div className=" flex-grow p-6">
-          {chatLogs && (
-            <ul>
-              {chatLogs.map((chat, index) => (
-                <li key={index}>{chat.message}</li>
-              ))}
-            </ul>
-          )}
+          <div className=" flex-grow p-6 overflow-y-scroll">
+            {chatLogs && (
+              <div className="flex flex-col space-y-4">
+                {chatLogs.map((chat, index) => (
+                  <div
+                    key={index}
+                    className={`${
+                      chat.type == "user" ? "justify-end " : "justify-start"
+                    } flex text-left`}
+                  >
+                    <div
+                      className={`${
+                        chat.type === "user" ? "bg-[#a54371]" : "bg-[#4A3434]"
+                      } rounded-lg p-3 text-white max-w-sm`}
+                    >
+                      {chat.message}
+                    </div>
+                  </div>
+                ))}
+
+                {isLoading && (
+                  <div key={chatLogs.length} className="flex justify-start">
+                    <div className="bg-[#4A3434] rounded-lg p-4 text-white max-w-sm">
+                      <LoadingAnimation />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <form onSubmit={handleSubmit} className="flex space-x-2">
+            <input
+              type="text"
+              className=" border-2 border-gray-500 rounded-md flex-grow p-2 outline-none text-black"
+              placeholder="Type your message..."
+              value={inputVal}
+              onChange={(e) => setInputVal(e.target.value)}
+            />
+            <button
+              type="submit"
+              className=" flex justify-center items-center px-2 bg-slate-900 hover:bg-slate-600 duration-150 rounded-md"
+            >
+              Send <BiSend />
+            </button>
+          </form>
         </div>
-
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            className=" border-2 border-gray-500 rounded"
-            placeholder="Type your message..."
-            value={inputVal}
-            onChange={(e) => setInputVal(e.target.value)}
-          />
-          <button type="submit" className="hover:bg-gray-200">
-            Send
-          </button>
-        </form>
       </main>
     </>
   );
