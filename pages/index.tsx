@@ -1,7 +1,4 @@
 import Head from "next/head";
-import Image from "next/image";
-import { Inter, Ultra } from "next/font/google";
-import styles from "@/styles/Home.module.css";
 import axios from "axios";
 import { useState } from "react";
 import { BiSend } from "react-icons/bi";
@@ -48,23 +45,41 @@ export default function Home() {
     const data = {
       prompt: inputValue,
     };
-    const url = "/api/chat";
+    // const url = "/api/chat";
+
+    // setIsLoading(true);
+
+    // axios
+    //   .post(url, data)
+    //   .then((res) => {
+    //     setChatLogs((prevChat) => [
+    //       ...prevChat,
+    //       { type: "bot", message: res.data.text },
+    //     ]);
+    //     setIsLoading(false);
+    //   })
+    //   .catch((error) => {
+    //     setIsLoading(false);
+    //     console.log(error);
+    //   });
 
     setIsLoading(true);
 
-    axios
-      .post(url, data)
-      .then((res) => {
-        setChatLogs((prevChat) => [
-          ...prevChat,
-          { type: "bot", message: res.data.text },
-        ]);
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        setIsLoading(false);
-        console.log(error);
-      });
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      body: JSON.stringify(data),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    await response.json().then((res) => {
+      setChatLogs((prevChat) => [
+        ...prevChat,
+        { type: "bot", message: res.text },
+      ]);
+      setIsLoading(false);
+    });
   };
 
   return (
@@ -76,7 +91,7 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className=" bg-gradient-to-r from-[#C990AB] to-[#4A3434]">
-        <div className="text-white font-bold text-center flex flex-col h-screen w-1/2 mx-auto border-2 border-[#4A3434]">
+        <div className="text-white font-bold text-center flex flex-col h-screen w-1/2 mx-auto shadow-[#1c1515] shadow-xl">
           {/* <button
           className="p-2 rounded bg-black cursor-pointer"
           onClick={clickHandler}
@@ -94,7 +109,7 @@ export default function Home() {
           )}
         </div> */}
 
-          <h1 className="text-3xl">Chat Bot</h1>
+          <h1 className="text-3xl py-3 chat-shadow">Chat Bot</h1>
 
           <div className=" flex-grow p-6 overflow-y-scroll">
             {chatLogs && (
@@ -108,8 +123,10 @@ export default function Home() {
                   >
                     <div
                       className={`${
-                        chat.type === "user" ? "bg-[#a54371]" : "bg-[#4A3434]"
-                      } rounded-lg p-3 text-white max-w-sm`}
+                        chat.type === "user"
+                          ? "bg-[#a54371] rounded-t-2xl rounded-bl-2xl"
+                          : "bg-[#4A3434] rounded-t-2xl rounded-br-2xl"
+                      }  p-3 text-white max-w-sm`}
                     >
                       {chat.message}
                     </div>
@@ -130,14 +147,14 @@ export default function Home() {
           <form onSubmit={handleSubmit} className="flex space-x-2">
             <input
               type="text"
-              className=" border-2 border-gray-500 rounded-md flex-grow p-2 outline-none text-black"
+              className=" border-2 border-gray-500 rounded-md flex-grow p-2 outline-none text-black ml-2"
               placeholder="Type your message..."
               value={inputVal}
               onChange={(e) => setInputVal(e.target.value)}
             />
             <button
               type="submit"
-              className=" flex justify-center items-center px-2 bg-slate-900 hover:bg-slate-600 duration-150 rounded-md"
+              className=" flex justify-center items-center px-6 bg-[#4A3434] hover:bg-[#C990AB] duration-150 rounded-md"
             >
               Send <BiSend />
             </button>
