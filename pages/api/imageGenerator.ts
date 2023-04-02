@@ -18,16 +18,20 @@ export default async function handler(
       });
 
       const openai = new OpenAIApi(config);
-      const textResults = await openai.createChatCompletion({
-        model: "gpt-3.5-turbo",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0,
-        max_tokens: 2048,
+
+      const imageResult = await openai.createImage({
+        prompt,
+        n: 1,
+        size: "1024x1024",
       });
 
-      const response = textResults.data.choices[0].message;
+      const imageResponse = imageResult.data.data[0].url;
 
-      res.status(200).json({ text: response });
+      console.log("Image response: ", imageResponse);
+
+      //   const response = textResults.data.choices[0].message;
+
+      //   res.status(200).json({ text: response });
     } catch (error) {
       console.log(error);
       res.status(500).json({ message: "Something went wrong" });
